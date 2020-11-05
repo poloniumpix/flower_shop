@@ -15,7 +15,7 @@ class VioletAdmin(admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'category':
-            return ModelChoiceField(Category.objects.filter(slug='violets'))
+            return ModelChoiceField(Category.objects.filter(slug='violet'))
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
@@ -43,6 +43,7 @@ admin.site.register(Fuchsia, FuchsiaAdmin)
 admin.site.register(Violet, VioletAdmin)
 admin.site.register(Gloxinia, GloxiniaAdmin)
 admin.site.register(Rose, RoseAdmin)
+admin.site.register(Order)
 
 
 # Register your models here.

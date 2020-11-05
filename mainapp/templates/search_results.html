@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'base' %}">Главная</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Поиск</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+    <h1>Товары по запросу:</h1>
+<ul>
+{% if object_list %}
+  {% for flower in object_list %}
+  <div class="col-lg-4 col-md-6 mb-4">
+    <div class="card h-100">
+      <a href="{{ flower.get_absolute_url }}"><img class="card-img-top" src="{{ flower.image.url }}" alt=""></a>
+      <div class="card-body">
+        <h4 class="card-title">
+          <a href="{{ flower.get_absolute_url }}">{{ flower.title }}</a>
+        </h4>
+          <h5>{{ flower.specie }}</h5>
+        <h5>{{ flower.price }} BYN</h5>
+          <a href="{% url 'add_to_cart' ct_model=flower.get_model_name slug=flower.slug %}">
+              <button class="btn btn-warning">Добавить в корзину</button>
+          </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+    {% bootstrap_pagination object_list url=last_question %}
+    {% else %}
+        <p>Не найдено публикаций по вашему запросу<br>Попробуйте повторить запрос с другой формулировкой</p>
+{% endif %}
+</ul>
+
+{% endblock content %}
