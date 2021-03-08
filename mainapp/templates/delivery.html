@@ -1,35 +1,37 @@
 {% extends 'base.html' %}
 
+
 {% block content %}
 
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'base' %}">Главная</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Доставка</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-</div>
-    <div class="col-12 col-4">
-            <div class="card bg-light mb-3">
-                <div class="card-header bg-success text-white text-uppercase"><i class="fa fa-home"></i> ОПЦИИ ДОСТАВКИ</div>
-                <div class="card-body">
-                     <p><strong>Пункт самовывоза</strong></p>
-                    <p>г. Минск, ул. Наполеона Орды, д. 17</p>
-                    <p><strong>Курьерская доставка</strong></p>
-                    <p>По г. Минску - бесплатно при сумме заказа от 15 BYN</p>
-                    <p><strong>Почта</strong></p>
-                    <p>Стоимость рассчитывается исходя из почтового расхода</p>
-
-                </div>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'base' %}">Главная</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Доставка</li>
+                    </ol>
+                </nav>
             </div>
         </div>
     </div>
-</div>
+    <div class="col-12 col-4">
+        <div class="card bg-light mb-4">
+            <div class="card-header bg-success text-white text-uppercase"><i class="fa fa-home"></i> ОПЦИИ ДОСТАВКИ
+            </div>
+            <div class="card-body">
+                <p><strong>Пункт самовывоза</strong></p>
+                <p>г. Минск, ул. Наполеона Орды, д. 17</p>
+                <p><strong>Курьерская доставка</strong></p>
+                <p>По г. Минск - бесплатно при сумме заказа от 15 BYN</p>
+                <p><strong>Почта</strong></p>
+                <p>Стоимость рассчитывается исходя из почтового расхода</p>
+
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
 
 
 {% endblock content %}

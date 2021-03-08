@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load crispy_forms_filters %}
+{% block content %}
+
+    <h2 class="mt-4 mb-4 text-dark text-center">
+        Пользователь {{ request.user.username }}
+        {{ request.user.first_name }} {{ request.user.last_name }}
+    </h2>
+    <h3 class="mt-4 mb-4 text-dark text-center">
+        Совершенные заказы:
+        {% if not orders.count %}
+            <div class="col-md-12" style="margin-top: 30px; margin-bottom: 30px;">
+                <h4>
+                    Вы еще не совершали заказов!
+
+                    <h3 style="margin-top: 100px; margin-bottom: 100px;"><a class="badge-pill badge-warning"
+                                                                            href="{% url 'base' %}">Перейти к
+                        покупкам</a></h3>
+
+                </h4>
+            </div>
+        {% else %}
+            <div class="col-md-10" style="margin-top: 70px; margin-bottom: 50px;">
+                <table class="table">
+                    <thead>
+                    <th scope="col">Номер заказа</th>
+                    <th scope="col">Статус заказа</th>
+                    <th scope="col">Общая сумма</th>
+                    <th scope="col">Товары в заказе</th>
+                    </thead>
+                    <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <th scope="row">
+                                {{ order.id }}
+                            </th>
+                            <td>
+                                {{ order.get_status_display }}
+                            </td>
+                            <td>
+                                {{ order.cart.final_price }} BYN
+                            </td>
+                            <td>
+                                <ul>
+                                    {% for item in order.cart.products.all %}
+                                        <li>{{ item.product.title }} x {{ item.qty }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </h3>
+
+{% endblock content %}

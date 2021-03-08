@@ -1,58 +1,40 @@
 from django.db import transaction
-from itertools import chain
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render
-from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
-from django.views.generic import DetailView, View, ListView
+from django.views.generic import DetailView, View
 from django.core.mail import send_mail
 
-from .models import Fuchsia, Gloxinia, Rose, Violet, Category, LatestProducts, Customer, Cart, CartProduct, Product, Flower
-from .mixins import CategoryDetailMixin, CartMixin
-from .forms import OrderForm, ContactForm
+from .models import Category, Customer, CartProduct, Product, Order
+from .mixins import CartMixin
+from .forms import OrderForm, ContactForm, LoginForm, RegistryForm
 from .utilities import recalc_cart
 
 
 class BasicView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
-        categories = Category.objects.get_categories_for_left_sidebar()
-        products = LatestProducts.objects.get_products_for_main_page('fuchsia', 'rose', 'violet', 'gloxinia')
+        categories = Category.objects.all()
+        products = Product.objects.all()
         context = {'categories': categories,
                    'products': products,
                    'cart': self.cart}
         return render(request, 'base.html', context)
 
 
-class ProductDetailView(CartMixin, CategoryDetailMixin, DetailView):
-
-    CT_MODEL_CLASS = {
-        'gloxinia': Gloxinia,
-        'fuchsia': Fuchsia,
-        'violet': Violet,
-        'rose': Rose
-    }
-
-    def dispatch(self, request, *args, **kwargs):
-
-        self.model = self.CT_MODEL_CLASS[kwargs['ct_model']]
-        self.queryset = self.model._base_manager.all()
-        return super().dispatch(request, *args, **kwargs)
-
+class ProductDetailView(CartMixin, DetailView):
     context_object_name = 'product'
     template_name = 'product_detail.html'
     slug_url_kwarg = 'slug'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['ct_model'] = self.model._meta.model_name
         context['cart'] = self.cart
         return context
 
 
-class CategoryDetailView(CartMixin, CategoryDetailMixin, DetailView):
-
+class CategoryDetailView(CartMixin, DetailView):
     model = Category
     queryset = Category.objects.all()
     context_object_name = 'category'
@@ -68,7 +50,7 @@ class CategoryDetailView(CartMixin, CategoryDetailMixin, DetailView):
 class CartView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
-        categories = Category.objects.get_categories_for_left_sidebar()
+        categories = Category.objects.all()
         context = {
             'cart': self.cart,
             'categories': categories
@@ -79,11 +61,10 @@ class CartView(CartMixin, View):
 class AddToCartView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
-        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
-        content_type = ContentType.objects.get(model=ct_model)
-        product = content_type.model_class().objects.get(slug=product_slug)
+        product_slug = kwargs.get('slug')
+        product = Product.objects.get(slug=product_slug)
         cart_product, created = CartProduct.objects.get_or_create(
-            user=self.cart.owner, cart=self.cart, content_type=content_type, object_id=product.id
+            user=self.cart.owner, cart=self.cart, product=product
         )
         if created:
             self.cart.products.add(cart_product)
@@ -95,11 +76,10 @@ class AddToCartView(CartMixin, View):
 class DeleteFromCartView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
-        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
-        content_type = ContentType.objects.get(model=ct_model)
-        product = content_type.model_class().objects.get(slug=product_slug)
+        product_slug = kwargs.get('slug')
+        product = Product.objects.get(slug=product_slug)
         cart_product = CartProduct.objects.get(
-            user=self.cart.owner, cart=self.cart, content_type=content_type, object_id=product.id
+            user=self.cart.owner, cart=self.cart, product=product
         )
         self.cart.products.remove(cart_product)
         cart_product.delete()
@@ -108,15 +88,13 @@ class DeleteFromCartView(CartMixin, View):
         return HttpResponseRedirect('/cart/')
 
 
-
 class ChangeQuantityView(CartMixin, View):
 
     def post(self, request, *args, **kwargs):
-        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
-        content_type = ContentType.objects.get(model=ct_model)
-        product = content_type.model_class().objects.get(slug=product_slug)
+        product_slug = kwargs.get('slug')
+        product = Product.objects.get(slug=product_slug)
         cart_product = CartProduct.objects.get(
-            user=self.cart.owner, cart=self.cart, content_type=content_type, object_id=product.id
+            user=self.cart.owner, cart=self.cart, product=product
         )
         qty = int(request.POST.get('qty'))
         cart_product.qty = qty
@@ -129,7 +107,7 @@ class ChangeQuantityView(CartMixin, View):
 class CheckoutView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
-        categories = Category.objects.get_categories_for_left_sidebar()
+        categories = Category.objects.all()
         form = OrderForm(request.POST or None)
         context = {
             'cart': self.cart,
@@ -161,7 +139,8 @@ class MakeOrderView(CartMixin, View):
             new_order.cart = self.cart
             new_order.save()
             customer.orders.add(new_order)
-            messages.add_message(request, messages.INFO, f'Благодарим за заказ, {new_order.first_name}! Заказ будет обработан в течение 20 минут')
+            messages.add_message(request, messages.INFO,
+                                 f'Благодарим за заказ, {new_order.first_name}! Заказ будет обработан в течение 20 минут')
             return HttpResponseRedirect('/')
         return HttpResponseRedirect('/checkout/')
 
@@ -170,7 +149,7 @@ class ContactsView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
         form = ContactForm(request.POST or None)
-        categories = Category.objects.get_categories_for_left_sidebar()
+        categories = Category.objects.all()
         context = {'cart': self.cart,
                    'categories': categories,
                    'form': form}
@@ -178,7 +157,7 @@ class ContactsView(CartMixin, View):
 
     @transaction.atomic
     def post(self, request):
-        categories = Category.objects.get_categories_for_left_sidebar()
+        categories = Category.objects.all()
         name = ''
         email = ''
         comment = ''
@@ -190,11 +169,8 @@ class ContactsView(CartMixin, View):
             subject = "Пользовательское обращение (Florus)"
             comment = f"Пользователь {name} с e-mail адресом {email} отправил сообщение:\n\n {comment}"
             send_mail(subject, comment, 'florus.service@gmail.com', [email])
-            context = {'form': form,
-                       'cart': self.cart,
-                       'categories': categories
-                       }
-            messages.add_message(request, messages.INFO, f'Благодарим за обращение! Оно будет рассмотрено в течение 2 часов')
+            messages.add_message(request, messages.INFO,
+                                 f'Благодарим за обращение! Оно будет рассмотрено в течение 2 часов')
             return HttpResponseRedirect('/')
 
         else:
@@ -207,7 +183,7 @@ class ContactsView(CartMixin, View):
 class DeliveryView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
-        categories = Category.objects.get_categories_for_left_sidebar()
+        categories = Category.objects.all()
         context = {
             'cart': self.cart,
             'categories': categories
@@ -215,54 +191,68 @@ class DeliveryView(CartMixin, View):
         return render(request, 'delivery.html', context)
 
 
-class SearchResultsView(CartMixin, View):
-
-    template_name = 'search_results.html'
+class RegistryView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
-        categories = Category.objects.get_categories_for_left_sidebar()
-        context = {}
+        form = RegistryForm(request.POST or None)
+        categories = Category.objects.all()
+        context = {'form': form, 'categories': categories, 'cart': self.cart}
+        return render(request, 'registry.html', context)
 
-        q = request.GET.get('q')
-        if q:
-            query_sets = []
-            query_sets.append(Fuchsia.objects.search(query=q))
-            query_sets.append(Gloxinia.objects.search(query=q))
-            query_sets.append(Rose.objects.search(query=q))
-            query_sets.append(Violet.objects.search(query=q))
-
-            final_set = list(chain(*query_sets))
-            final_set.sort(key=lambda x: x.price, reverse=True)
-
-            context['last_question'] = '?q=%s' % q
-
-            current_page = Paginator(final_set, 10)
-
-            page = request.GET.get('page')
-            try:
-                context['object_list'] = current_page.page(page)
-            except PageNotAnInteger:
-                context['object_list'] = current_page.page(1)
-            except EmptyPage:
-                context['object_list'] = current_page.page(current_page.num_pages)
-
-        return render(request, template_name='search_results.html', context=context)
-
-
-
-
-
+    def post(self, request, *args, **kwargs):
+        form = RegistryForm(request.POST or None)
+        categories = Category.objects.all()
+        context = {'form': form, 'categories': categories, 'cart': self.cart}
+        if form.is_valid():
+            new_user_registered = form.save(commit=False)
+            new_user_registered.username = form.cleaned_data['username']
+            new_user_registered.email = form.cleaned_data['email']
+            new_user_registered.first_name = form.cleaned_data['first_name']
+            new_user_registered.last_name = form.cleaned_data['last_name']
+            new_user_registered.phone_number = form.cleaned_data['phone_number']
+            new_user_registered.save()
+            new_user_registered.set_password(form.cleaned_data['password'])
+            new_user_registered.save()
+            Customer.objects.create(
+                user=new_user_registered,
+                phone_number=form.cleaned_data['phone_number'],
+            )
+            user = authenticate(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password']
+            )
+            login(request, user)
+            return HttpResponseRedirect('/')
+        return render(request, 'registry.html', context)
 
 
+class LoginView(CartMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        form = LoginForm(request.POST or None)
+        categories = Category.objects.all()
+        context = {'form': form, 'categories': categories, 'cart': self.cart}
+        return render(request, 'login.html', context)
+
+    def post(self, request, *args, **kwargs):
+        form = LoginForm(request.POST or None)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(username=username, password=password)
+            if user:
+                login(request, user)
+                return HttpResponseRedirect('/')
+        categories = Category.objects.all()
+        context = {'form': form, 'categories': categories, 'cart': self.cart}
+        return render(request, 'login.html', context)
 
 
+class CustomerAccountView(CartMixin, View):
 
-
-
-
-
-
-
-
-
-
+    def get(self, request, *args, **kwargs):
+        categories = Category.objects.all()
+        customer = Customer.objects.get(user=request.user)
+        orders = Order.objects.filter(customer=customer).order_by('-created_at')
+        context = {'categories': categories, 'cart': self.cart, 'orders': orders}
+        return render(request, 'customer_account.html', context)

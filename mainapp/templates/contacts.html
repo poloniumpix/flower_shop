@@ -4,50 +4,52 @@
 
 {% block content %}
 
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<!------ Include the above in your HEAD tag ---------->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!------ Include the above in your HEAD tag ---------->
 
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'base' %}">Главная</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Контакты</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-</div>
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <div class="card">
-                <div class="card-header bg-primary text-white"><i class="fa fa-envelope"></i> Связаться с нами
-                </div>
-                <div class="card-body">
-                   <form action="" method="POST">
-{% csrf_token %}
-{{ form|crispy}}
-<input type="submit" class="btn btn-primary btn-block mb-3" value="Отправить"/>
-</form>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-4">
-            <div class="card bg-light mb-3">
-                <div class="card-header bg-success text-white text-uppercase"><i class="fa fa-home"></i> Адрес магазина</div>
-                <div class="card-body">
-                    <p>г. Минск</p>
-                    <p>ул. Наполеона Орды, д. 17</p>
-                    <p>florus.assistant@gmail.com</p>
-                    <p>Тел. +375 (33) 765 - 18 - 90</p>
-                </div>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'base' %}">Главная</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Контакты</li>
+                    </ol>
+                </nav>
             </div>
         </div>
     </div>
-</div>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header bg-primary text-white"><i class="fa fa-envelope"></i> Связаться с нами
+                    </div>
+                    <div class="card-body">
+                        <form action="" method="POST">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <input type="submit" class="btn btn-primary btn-block mb-2" value="Отправить"/>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-8 col-sm-4">
+                <div class="card bg-light mb-3">
+                    <div class="card-header bg-success text-white text-uppercase"><i class="fa fa-home"></i> Адрес
+                        магазина
+                    </div>
+                    <div class="card-body">
+                        <p>г. Минск</p>
+                        <p>ул. Наполеона Орды, д. 17</p>
+                        <p>florus.assistant@gmail.com</p>
+                        <p>Тел. +375 (33) 765 - 18 - 90</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock content %}
