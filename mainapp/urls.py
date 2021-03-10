@@ -16,6 +16,7 @@ from .views import (
     RegistryView,
     LoginView,
     CustomerAccountView,
+    SearchResultView
 )
 
 urlpatterns = [
@@ -34,4 +35,5 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(next_page='/'), name='logout'),
     path('account/', CustomerAccountView.as_view(), name='account'),
+    path('search_results/', SearchResultView.as_view(), name='search_results')
 ]

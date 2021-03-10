@@ -30,14 +30,13 @@
                             </h4>
                             <h5>{{ flower.specie }}</h5>
                             <h5>{{ flower.price }} BYN</h5>
-                            <a href="{% url 'add_to_cart' ct_model=flower.get_model_name slug=flower.slug %}">
+                            <a href="{% url 'add_to_cart' slug=flower.slug %}">
                                 <button class="btn btn-warning">Добавить в корзину</button>
                             </a>
                         </div>
                     </div>
                 </div>
             {% endfor %}
-            {% bootstrap_pagination object_list url=last_question %}
         {% else %}
             <p>Не найдено публикаций по вашему запросу<br>Попробуйте повторить запрос с другой формулировкой</p>
         {% endif %}

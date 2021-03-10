@@ -82,6 +82,12 @@
 
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
+              <form class="md-form mt-0" action="{% url 'search_results' %}" method="get">
+                  <i class="fas fa-search" aria-hidden="true"></i>
+                  <input name="q" class="form-control" type="text" placeholder="Поиск товара..." aria-label="Search">
+              </form>
+          </li>
+                <li class="nav-item">
                     <a class="nav-link text-white" href="{% url 'contacts' %}">Контакты</a>
                 </li>
                 <li class="nav-item">

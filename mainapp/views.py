@@ -3,8 +3,9 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
-from django.views.generic import DetailView, View
+from django.views.generic import DetailView, View, ListView
 from django.core.mail import send_mail
+from django.db.models import Q
 
 from .models import Category, Customer, CartProduct, Product, Order
 from .mixins import CartMixin
@@ -27,10 +28,13 @@ class ProductDetailView(CartMixin, DetailView):
     context_object_name = 'product'
     template_name = 'product_detail.html'
     slug_url_kwarg = 'slug'
+    queryset = Product.objects.all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        categories = Category.objects.all()
         context['cart'] = self.cart
+        context['categories'] = categories
         return context
 
 
@@ -43,7 +47,9 @@ class CategoryDetailView(CartMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        categories = Category.objects.all()
         context['cart'] = self.cart
+        context['categories'] = categories
         return context
 
 
@@ -256,3 +262,15 @@ class CustomerAccountView(CartMixin, View):
         orders = Order.objects.filter(customer=customer).order_by('-created_at')
         context = {'categories': categories, 'cart': self.cart, 'orders': orders}
         return render(request, 'customer_account.html', context)
+
+
+class SearchResultView(CartMixin, ListView):
+    model = Product
+    template_name = 'search_results.html'
+
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        object_list = Product.objects.filter(
+            Q(title__icontains=query) | Q(color__icontains=query)
+        )
+        return object_list
