@@ -7,6 +7,4 @@ NOTE that contacts form is disabled until you set up your e-mail adress (which i
 
 TO_DO:
 
-1.fix the product details
-2.fix the search
-3.make a new decent categories
+1.make a new decent categories
