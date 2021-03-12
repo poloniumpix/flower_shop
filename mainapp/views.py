@@ -146,7 +146,7 @@ class MakeOrderView(CartMixin, View):
             new_order.save()
             customer.orders.add(new_order)
             messages.add_message(request, messages.INFO,
-                                 f'Благодарим за заказ, {new_order.first_name}! Заказ будет обработан в течение 20 минут')
+                                 f'Благодарим за заказ, {new_order.first_name}! Заказ будет обработан в течение 30 минут')
             return HttpResponseRedirect('/')
         return HttpResponseRedirect('/checkout/')
 
@@ -264,13 +264,15 @@ class CustomerAccountView(CartMixin, View):
         return render(request, 'customer_account.html', context)
 
 
-class SearchResultView(CartMixin, ListView):
+class SearchResultView(CartMixin, View):
     model = Product
     template_name = 'search_results.html'
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         query = self.request.GET.get('q')
+        categories = Category.objects.all()
         object_list = Product.objects.filter(
             Q(title__icontains=query) | Q(color__icontains=query)
         )
-        return object_list
+        context = {'categories': categories, 'cart': self.cart, 'object_list': object_list}
+        return render(request, 'search_results.html', context)
