@@ -1,21 +1,42 @@
 from django.urls import path
 from django.contrib.auth.views import LogoutView
 
-from .views import (
-    BasicView,
+from mainapp.views import (
+    BasicView,)
+from product.views import (
     ProductDetailView,
+)
+from categorys.views import (
     CategoryDetailView,
+)
+from cart.views import (
     CartView,
     AddToCartView,
     DeleteFromCartView,
     ChangeQuantityView,
+)
+from checkout.views import (
     CheckoutView,
+)
+from order.views import (
     MakeOrderView,
+)
+from contacts.views import (
     ContactsView,
+)
+from delivery.views import (
     DeliveryView,
+)
+from registry.views import (
     RegistryView,
+)
+from login.views import (
     LoginView,
+)
+from customer.views import (
     CustomerAccountView,
+)
+from search.views import (
     SearchResultView
 )
 

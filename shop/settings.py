@@ -22,6 +22,22 @@ INSTALLED_APPS = [
     'crispy_forms',
     'bootstrap4',
 'django_forms_bootstrap',
+    'cart',
+    'product',
+    'categorys',
+    'search',
+    'checkout',
+    'order',
+    'delivery',
+    'registry',
+    'customer',
+    'review',
+    'contacts',
+    'login',
+    'cartproduct'
+
+
+
 ]
 
 MIDDLEWARE = [
@@ -81,9 +97,9 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
-USE_I18N = True
+USE_I18N = False
 
-USE_L10N = True
+USE_L10N = False
 
 USE_TZ = True
 
